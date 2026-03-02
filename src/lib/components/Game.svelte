@@ -1335,7 +1335,20 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
-        if (mobileCheck()) {
+        if(window.flutter_inappwebview != null) {
+          window.flutter_inappwebview.callHandler("requestShare", DTGCore.formatString(
+              completeCopyFormat,
+              date,
+              difficulty,
+              `${Math.floor(timerValue / 60)}:${
+                  timerValue % 60 < 10
+                      ? "0" + (timerValue % 60)
+                      : timerValue % 60
+              }`,
+              window.location.href,
+          ))
+        }
+        else if (mobileCheck()) {
             navigator.share({
                 text: DTGCore.formatString(
                     completeCopyFormat,
