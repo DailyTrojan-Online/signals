@@ -5,11 +5,16 @@
     import Game from "$lib/components/Game.svelte";
     import { onMount } from "svelte";
     let gameStart = $state(false);
-    let gameComponent: Game | null = $state(null)
-    let complete = $state([false, false, false])
-    let difficulties: ("easy" | "medium" | "hard")[] = ["easy", "medium", "hard"]
-    let allComplete = $derived(complete[0] && complete[1] && complete[2])
-    
+    let gameComponent: Game | null = $state(null);
+    let complete = $state([false, false, false]);
+    let difficulties: ("easy" | "medium" | "hard")[] = [
+        "easy",
+        "medium",
+        "hard",
+    ];
+    let allComplete = $derived(complete[0] && complete[1] && complete[2]);
+    let splashReady = $state(false);
+
     let gameSeed = new Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "2-digit",
@@ -17,51 +22,54 @@
     }).format(new Date());
 
     function playGame() {
-      if(gameComponent == null ) return
-      gameStart = true;
-      gameComponent.playGame();
+        if (gameComponent == null) return;
+        gameStart = true;
+        gameComponent.playGame();
     }
-    
+
     function loadData(id: string) {
         let item = localStorage.getItem(id);
         if (item != null) return JSON.parse(item);
         else return null;
     }
-    
+
     function updateSplash() {
-      let easyData = loadData('signals-today-easy')
-      let mediumData = loadData('signals-today-medium')
-      let hardData = loadData('signals-today-hard')
-      if(easyData != null && easyData.date == gameSeed) {
-        complete[0] = easyData.over
-      }
-      if(mediumData != null && mediumData.date == gameSeed) {
-        complete[1] = mediumData.over
-      }
-      if(hardData != null && hardData.date == gameSeed) {
-        complete[2] = hardData.over
-      }
-      console.log(complete)
-      if(allComplete) {
-        difficulty = "infinite"
-      }
-      
-    }
-    
-    onMount(()=>{
-      updateSplash();
-    })
-    
-    function playAnotherDifficulty() {
-      updateSplash();
-      for(let i = 0; i < complete.length; i++) {
-        if(!complete[i]) {
-          difficulty = difficulties[i]
-          break;
+        let easyData = loadData("signals-today-easy");
+        let mediumData = loadData("signals-today-medium");
+        let hardData = loadData("signals-today-hard");
+        if (easyData != null && easyData.date == gameSeed) {
+            complete[0] = easyData.over;
         }
-        
-      }
-      gameStart = false;
+        if (mediumData != null && mediumData.date == gameSeed) {
+            complete[1] = mediumData.over;
+        }
+        if (hardData != null && hardData.date == gameSeed) {
+            complete[2] = hardData.over;
+        }
+        console.log(complete);
+        if (allComplete) {
+            difficulty = "infinite";
+        }
+    }
+
+    onMount(() => {
+        updateSplash();
+        setTimeout(() => {
+            splashReady = true;
+        }, 1);
+    });
+
+    function playAnotherDifficulty() {
+        updateSplash();
+        gameStart = false;
+        setTimeout(() => {
+            for (let i = 0; i < complete.length; i++) {
+                if (!complete[i]) {
+                    difficulty = difficulties[i];
+                    break;
+                }
+            }
+        }, 500);
     }
 </script>
 
@@ -70,11 +78,13 @@
     id="splash"
     class:game-splash-hidden={gameStart}
 >
-    <div class="game-splash-inner" class:game-splash-ready={true}>
+    <div class="game-splash-inner" class:game-splash-ready={splashReady}>
         <img width="80" src={SignalsLogo} alt="Signals Logo" />
         <h1>Signals</h1>
         <h2 id="game-tagline">
-            {allComplete ? "You've completed all the puzzles for today." : "Connect the signal by placing the blocks in order." }
+            {allComplete
+                ? "You've completed all the puzzles for today."
+                : "Connect the signal by placing the blocks in order."}
         </h2>
         <div class="difficulty-selector">
             <button
@@ -82,62 +92,70 @@
                 onclick={() => {
                     difficulty = "easy";
                 }}
-                class:active={difficulty == "easy"}>
-                    {#if complete[0]}
-                        <i class="ti ti-check"></i>
-                        {/if}
-                    Easy</button
+                class:active={difficulty == "easy"}
+            >
+                {#if complete[0]}
+                    <i class="ti ti-check"></i>
+                {/if}
+                Easy</button
             >
             <button
                 class="difficulty-option"
                 onclick={() => {
                     difficulty = "medium";
                 }}
-                class:active={difficulty == "medium"}>
-                    {#if complete[1]}
-                        <i class="ti ti-check"></i>
-                        {/if}Medium</button
+                class:active={difficulty == "medium"}
+            >
+                {#if complete[1]}
+                    <i class="ti ti-check"></i>
+                {/if}Medium</button
             >
             <button
                 class="difficulty-option"
                 onclick={() => {
                     difficulty = "hard";
                 }}
-                class:active={difficulty == "hard"}>
-                    {#if complete[2]}
-                        <i class="ti ti-check"></i>
-                        {/if}Hard</button
+                class:active={difficulty == "hard"}
             >
-            
+                {#if complete[2]}
+                    <i class="ti ti-check"></i>
+                {/if}Hard</button
+            >
+
             {#if allComplete}
-            <button
-                class="difficulty-option"
-                onclick={() => {
-                    difficulty = "infinite";
-                }}
-                class:active={difficulty == "infinite"}>Unlimited Mode</button
-            >
+                <button
+                    class="difficulty-option"
+                    onclick={() => {
+                        difficulty = "infinite";
+                    }}
+                    class:active={difficulty == "infinite"}
+                    >Unlimited Mode</button
+                >
             {/if}
         </div>
         <div class="flex-hor">
             <button id="game-back-button">Back</button>
-            <button
-                id="game-action-button"
-                onclick={playGame}>Play</button
-            >
+            <button id="game-action-button" onclick={playGame}>Play</button>
         </div>
-        <p id="splash-date">{new Intl.DateTimeFormat("en-US", {
-          month: "long",
-          day: "2-digit",
-          year: "numeric",
-        }).format(new Date())}</p>
+        <p id="splash-date">
+            {new Intl.DateTimeFormat("en-US", {
+                month: "long",
+                day: "2-digit",
+                year: "numeric",
+            }).format(new Date())}
+        </p>
         <p id="splash-date">Game by Noah Pinales</p>
     </div>
 </div>
 
 {#key difficulty}
-<Game {difficulty} anotherDifficulty={playAnotherDifficulty} bind:this={gameComponent}></Game>
+    <Game
+        {difficulty}
+        anotherDifficulty={playAnotherDifficulty}
+        bind:this={gameComponent}
+    ></Game>
 {/key}
+
 <style>
     .main {
         overflow-y: auto;
@@ -160,9 +178,8 @@
         margin: 0 !important;
         gap: 4px;
     }
-    .difficulty-option:has(i ) {
+    .difficulty-option:has(i) {
         padding-left: 8px;
-        
     }
     .difficulty-option:hover {
         color: black !important;
@@ -188,7 +205,9 @@
         background: #73bf9c;
         z-index: 90 !important;
     }
-    .game-splash-wrapper h1, .game-splash-wrapper h2, .game-splash-wrapper p {
+    .game-splash-wrapper h1,
+    .game-splash-wrapper h2,
+    .game-splash-wrapper p {
         color: #1b1b1b;
     }
 </style>
