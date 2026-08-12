@@ -1335,20 +1335,22 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
-        if(window.flutter_inappwebview != null) {
-          window.flutter_inappwebview.callHandler("requestShare", DTGCore.formatString(
-              completeCopyFormat,
-              date,
-              difficulty,
-              `${Math.floor(timerValue / 60)}:${
-                  timerValue % 60 < 10
-                      ? "0" + (timerValue % 60)
-                      : timerValue % 60
-              }`,
-             "https://dailytrojan-online.github.io/signals/",
-          ))
-        }
-        else if (mobileCheck()) {
+        if (window.flutter_inappwebview != null) {
+            window.flutter_inappwebview.callHandler(
+                "requestShare",
+                DTGCore.formatString(
+                    completeCopyFormat,
+                    date,
+                    difficulty,
+                    `${Math.floor(timerValue / 60)}:${
+                        timerValue % 60 < 10
+                            ? "0" + (timerValue % 60)
+                            : timerValue % 60
+                    }`,
+                    "https://dailytrojan-online.github.io/signals/",
+                ),
+            );
+        } else if (mobileCheck()) {
             navigator.share({
                 text: DTGCore.formatString(
                     completeCopyFormat,
@@ -1361,8 +1363,7 @@
                     }`,
                     "https://dailytrojan-online.github.io/signals/",
                 ),
-                url: 
-                "https://dailytrojan-online.github.io/signals/",
+                url: "https://dailytrojan-online.github.io/signals/",
             });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
@@ -1816,7 +1817,7 @@
                     ><i class="ti ti-share"></i> Share Results</button
                 >
             </div>
-            <a href="https://forms.gle/cC1gkwQszo7L27Mm8"
+            <a target="_blank" href="https://forms.gle/cC1gkwQszo7L27Mm8"
                 >Help us improve Signals! <u>Share your feedback.</u></a
             >
         </div>
@@ -2091,6 +2092,10 @@
     .modal-inner {
         padding: 30px;
         box-sizing: border-box;
+    }
+    .modal-content a {
+        color: unset;
+        text-decoration: unset;
     }
 
     .round-count {
