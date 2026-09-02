@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
     import { onMount } from "svelte";
 
     let url =
@@ -101,4 +101,4 @@ pulled {current} of {total}
         align-content: center;
         justify-content: flex-start;
     }
-</style>
+</style> -->
