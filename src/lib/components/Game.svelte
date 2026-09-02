@@ -1870,10 +1870,8 @@
                 >
             </div>
             <div class="flex-hor">
-                <button
-                    onclick={() => {
-                        DTGCore.homeRedirect();
-                    }}><i class="ti ti-device-gamepad"></i>All Games</button
+                <a class="button"
+                    href="https://dailytrojan.com/games/"><i class="ti ti-device-gamepad"></i>All Games</a
                 >
                 <button class="button-share" onclick={copyResultsString}
                     ><i class="ti ti-share"></i> Share Results</button
