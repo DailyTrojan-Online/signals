@@ -5,11 +5,22 @@
     import { DTGameCore } from "$lib/dailytrojan-lib/gameCore";
     import { Spring, Tween } from "svelte/motion";
     import { sineInOut } from "svelte/easing";
+    import { Poline, positionFunctions } from "poline";
+    import {
+      generateColorRamp,
+      colorUtils,
+    } from "rampensau";
+
+    const { uniqueRandomHues } = colorUtils;
+
+
     let gameSplash: HTMLElement | null = null;
     let gameDate: HTMLElement | null = null;
+
     import SignalsLogo from "$lib/assets/signals.svg";
 
     import NumberFlow from "@number-flow/svelte";
+    import { trackAnalytics } from "$lib/analytics";
     let showResultsModal = $state(false);
 
     let DTGCore: DTGameCore;
@@ -1072,6 +1083,55 @@
             sortByLightness = false,
         } = {},
     ) {
+        // let fns = Object.values(positionFunctions);
+        // let pol = new Poline({
+        //     anchorColors: [
+        //         [Math.round(Math.random() * -360), Math.random(), Math.random()],
+        //         [Math.round(Math.random() * -360), Math.random(), Math.random()],
+        //     ],
+        //     numPoints: count,
+        //     positionFunctionX: fns[Math.floor(Math.random() * fns.length)],
+        //     positionFunctionY: fns[Math.floor(Math.random() * fns.length)],
+        //     positionFunctionZ: fns[Math.floor(Math.random() * fns.length)],
+        //     invertedLightness: true,
+        // });
+        // let cls = pol.colors.map((c)=>chroma.hsl(c[0], c[1], c[2]))
+        // cls.pop()
+        // cls.shift()
+        // console.log(cls, count)
+
+        // let hueList: number[];
+        // if(DTGCore.randomFloat() > .5)
+        // {
+        //   hueList =  colorUtils.colorHarmonies.splitComplementary(DTGCore.randomFloat() * 360)
+        // }else {
+        //   hueList = uniqueRandomHues({
+        //     startHue: DTGCore.randomFloat(),
+        //     total: 2 + Math.round(DTGCore.randomFloat() * (count / 3)),
+        //   })
+        // }
+
+        // let r = generateColorRamp({
+        //   total: count,
+        //   hueList,
+        //   sRange: [0.5600, 0.937],
+        //   lRange: [0.85, 0.24],
+
+        //   sEasing:
+        //     (x) =>
+        //           x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+        //   lEasing:
+        //     (x) => -(Math.cos(Math.PI * x) - 1) / 2,
+        // });
+        // console.log(r)
+
+        // cls = r.map((c)=>chroma.hsl(c[0], c[1], c[2]))
+        // let scale = chroma.scale(cls);
+
+        // return (scale.colors(count, null))
+
+        // return cls;
+
         const clamp = (v: number, a: number, b: number) =>
             Math.max(a, Math.min(b, v));
         const rand = (a: number, b: number) =>
@@ -1104,7 +1164,7 @@
         if (sortByLightness) {
             colors.sort((a, b) => a.luminance() - b.luminance());
         }
-
+        console.log(colors, count)
         return colors;
     }
 
@@ -1202,6 +1262,7 @@
         gameOver = true;
         gameCompleteEffect();
         saveGameProgress();
+        trackAnalytics("win", { difficulty, time: timerValue });
     }
     function gameCompleteEffect() {
         disableInput = true;
@@ -1335,6 +1396,7 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
+        trackAnalytics("share", { difficulty });
         if (window.flutter_inappwebview != null) {
             window.flutter_inappwebview.callHandler(
                 "requestShare",

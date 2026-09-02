@@ -4,6 +4,7 @@
     let difficulty: "easy" | "medium" | "hard" | "infinite" = $state("easy");
     import Game from "$lib/components/Game.svelte";
     import { onMount } from "svelte";
+    import { trackAnalytics } from "$lib/analytics";
     let gameStart = $state(false);
     let gameComponent: Game | null = $state(null);
     let complete = $state([false, false, false]);
@@ -24,6 +25,7 @@
     function playGame() {
         if (gameComponent == null) return;
         gameStart = true;
+        trackAnalytics("play", { difficulty });
         gameComponent.playGame();
     }
 
@@ -54,6 +56,7 @@
 
     onMount(() => {
         updateSplash();
+        trackAnalytics("page_load");
         setTimeout(() => {
             splashReady = true;
         }, 1);

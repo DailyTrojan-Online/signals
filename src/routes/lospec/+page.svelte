@@ -1,0 +1,104 @@
+<script lang="ts">
+    import { onMount } from "svelte";
+
+    let url =
+        "https://lospec.com/palette-list/load?colorNumberFilterType=max&colorNumber=32&page=0&tag=&sortingType=default";
+
+    async function getLospecPage(page: number) {
+        let r = await fetch("../api/lospec?page=" + page);
+        let j = await r.json();
+        return j;
+    }
+    let total = $state(1);
+    let current = $state(0);
+    let minSize = 8;
+    let palettes = $state<{ colors: string[]; use: boolean }[]>([]);
+    async function startScrape() {
+        palettes = [];
+        let initialReq = await getLospecPage(0);
+        let paletteIncrement = initialReq.palettes.length;
+        let count = initialReq.totalCount;
+        current = 0;
+        total = count;
+        for (let i = 0; i < count / paletteIncrement; i++) {
+            let r = await getLospecPage(i);
+            let p = r.palettes
+                .map((pl: any) => {
+                    return { colors: pl.colors, use: true };
+                })
+                .filter(
+                    (a: { colors: string[]; use: boolean }) =>
+                        a.colors.length > minSize,
+                );
+            palettes.push(...p);
+            current += paletteIncrement;
+        }
+        console.log(palettes);
+    }
+    function exportPalettes() {
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({palettes: palettes.map(p=> p.colors)}, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", "palettes.json");
+      document.body.appendChild(downloadAnchorNode); // Required for Firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+</script>
+
+<button onclick={startScrape}>start pulling</button>
+<button onclick={exportPalettes}>export</button>
+<br />
+pulled {current} of {total}
+<br />
+<br />
+<div
+    class="progress"
+    style:background={`linear-gradient(to right, black, black ${(current / total) * 100}%, lightgray  ${(current / total) * 100}%)`}
+    style:width={"100%"}
+    style:height="8px"
+></div>
+
+<div class="palettes">
+    {#each palettes as palette, i}
+        {#if palette.use}
+            <div class="flex-hor">
+                <button
+                    onclick={() => {
+                        palettes[i].use = false;
+                    }}>remove</button
+                >
+                <div class="palette">
+                    {#each palette.colors as color}
+                        <div class="color" style:background={`#${color}`}></div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+    {/each}
+</div>
+
+<style>
+    .palettes {
+        width: 100%;
+        height: 1100px;
+        overflow: scroll;
+    }
+    .palette {
+        width: fit-content;
+        border-radius: 5px;
+        overflow: hidden;
+        display: flex;
+    }
+    .color {
+        aspect-ratio: 1 / 1;
+        height: 30px;
+    }
+    .flex-hor {
+        margin-top: 20px;
+        align-items: center;
+        align-content: center;
+        justify-content: flex-start;
+    }
+</style>
