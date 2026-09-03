@@ -130,7 +130,7 @@
         diff: "easy" | "medium" | "hard" | "infinite",
     ) {
         if (diff == "infinite") {
-            DTGCore.initRNG(Math.random().toString(36).substr(2, 9));
+            DTGCore.initRNG(Math.random());
         }
         let d = DTGCore.randomArrayElement(difficulties[diff]);
         disableInput = false;
@@ -1339,7 +1339,7 @@
             play("loading", {volume: .5})
             setTimeout(() => {
                 infiniteGamesPlayed += 1;
-                if ((infiniteGamesPlayed + 1) % 10 == 0 || true) {
+                if ((infiniteGamesPlayed + 1) % 10 == 0) {
                     rainbow = true;
                 }
                 infiniteRoundCountScale.set(1.2);
