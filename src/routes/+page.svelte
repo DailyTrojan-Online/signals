@@ -5,6 +5,7 @@
     import Game from "$lib/components/Game.svelte";
     import { onMount } from "svelte";
     import { trackAnalytics } from "$lib/analytics";
+    import { play } from "cuelume";
     let gameStart = $state(false);
     let gameComponent: Game | null = $state(null);
     let complete = $state([false, false, false]);
@@ -27,6 +28,7 @@
         gameStart = true;
         trackAnalytics("play", { difficulty });
         gameComponent.playGame();
+
     }
 
     function loadData(id: string) {

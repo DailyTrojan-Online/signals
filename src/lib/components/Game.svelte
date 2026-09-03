@@ -5,6 +5,7 @@
     import { DTGameCore } from "$lib/dailytrojan-lib/gameCore";
     import { Spring, Tween } from "svelte/motion";
     import { sineInOut } from "svelte/easing";
+    import { play } from "cuelume";
     import { Poline, positionFunctions } from "poline";
     import {
       generateColorRamp,
@@ -666,6 +667,8 @@
         if (activelyDragging) return;
         selectedBlock = block;
         activelyDragging = true;
+
+        play("pulse", {volume: .4});
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
         // Disable scrolling on the container during drag
@@ -824,6 +827,8 @@
             placeBlock(selectedBlock, { x, y });
         } else {
             selectedBlock.placed = false;
+
+            play("press");
             if (
                 !selectedBlock.locked &&
                 !selectedBlock.placed &&
@@ -900,6 +905,8 @@
         position: { x: number; y: number },
         instant = false,
     ) {
+      if(!instant)
+      play("toggle");
         block.placed = true;
         block.position = { ...position };
         block.cssPosition.set(
@@ -909,6 +916,7 @@
             },
             { instant: instant },
         );
+
         //need to revalidate the occupied spaces!
         for (let x = 0; x < gridX; x++) {
             for (let y = 0; y < gridY; y++) {
@@ -1281,6 +1289,8 @@
                 verticalBlockPadding = 0;
                 horizontalBlockPadding = 0;
                 gameDoneSpring.set(1.1);
+                play("sparkle");
+                play("chime");
                 setTimeout(() => {
                     gameDoneSpring.set(1, {
                         preserveMomentum: 1,
@@ -1326,13 +1336,15 @@
             roundCountVisible = true;
             infiniteRoundCountScale.set(1);
             infiniteRoundCountRotation.set(0);
+            play("loading", {volume: .5})
             setTimeout(() => {
                 infiniteGamesPlayed += 1;
-                if ((infiniteGamesPlayed + 1) % 10 == 0) {
+                if ((infiniteGamesPlayed + 1) % 10 == 0 || true) {
                     rainbow = true;
                 }
                 infiniteRoundCountScale.set(1.2);
                 infiniteRoundCountRotation.set(Math.random() * 10);
+                play("scan")
                 setTimeout(() => {
                     infiniteRoundCountScale.set(1);
                     infiniteRoundCountRotation.set(0);
@@ -1344,6 +1356,7 @@
                             Math.random() * 35 +
                                 (Math.random() > 0.5 ? -1 : 1) * 45,
                         );
+                        play("droplet", {volume: .25})
 
                         disableInput = false;
                         gameOver = false;
