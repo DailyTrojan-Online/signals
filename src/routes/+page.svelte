@@ -4,7 +4,6 @@
     let difficulty: "easy" | "medium" | "hard" | "infinite" = $state("easy");
     import Game from "$lib/components/Game.svelte";
     import { onMount } from "svelte";
-    import { trackAnalytics } from "$lib/analytics";
     import { play } from "cuelume";
     let gameStart = $state(false);
     let gameComponent: Game | null = $state(null);
@@ -14,6 +13,7 @@
         "medium",
         "hard",
     ];
+    let DTGCore: DTGameCore
     let allComplete = $derived(complete[0] && complete[1] && complete[2]);
     let splashReady = $state(false);
 
@@ -26,7 +26,7 @@
     function playGame() {
         if (gameComponent == null) return;
         gameStart = true;
-        trackAnalytics("play", { difficulty });
+        DTGCore.trackAnalytics("play", "signals", { difficulty });
         gameComponent.playGame();
 
     }
@@ -57,8 +57,9 @@
     }
 
     onMount(() => {
+        DTGCore = new DTGameCore(null, null);
         updateSplash();
-        trackAnalytics("page_load");
+        DTGCore.trackAnalytics("page_load", "signals");
         setTimeout(() => {
             splashReady = true;
         }, 1);
@@ -155,6 +156,7 @@
 
 {#key difficulty}
     <Game
+        {DTGCore}
         {difficulty}
         anotherDifficulty={playAnotherDifficulty}
         bind:this={gameComponent}

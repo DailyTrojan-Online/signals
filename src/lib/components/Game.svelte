@@ -21,20 +21,20 @@
     import SignalsLogo from "$lib/assets/signals.svg";
 
     import NumberFlow from "@number-flow/svelte";
-    import { trackAnalytics } from "$lib/analytics";
     let showResultsModal = $state(false);
 
-    let DTGCore: DTGameCore;
     let isWebKit = $state(false);
 
     let timerValue = $state(0);
 
     let {
         difficulty,
+        DTGCore,
         anotherDifficulty = () => {},
     }: {
         difficulty: "easy" | "medium" | "hard" | "infinite";
         anotherDifficulty: () => void;
+        DTGCore: DTGameCore
     } = $props();
 
     let gridX = $state(6);
@@ -106,7 +106,6 @@
     let gameBlockSelectors: HTMLElement | null = $state(null);
 
     onMount(async () => {
-        DTGCore = new DTGameCore(null, null);
         initializeGame(difficulty);
         window.initGame = initializeGame;
         //@ts-ignore
@@ -1270,7 +1269,7 @@
         gameOver = true;
         gameCompleteEffect();
         saveGameProgress();
-        trackAnalytics("win", { difficulty, time: timerValue });
+        DTGCore.trackAnalytics("win", "signals", { difficulty, time: timerValue });
     }
     function gameCompleteEffect() {
         disableInput = true;
@@ -1409,7 +1408,7 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
-        trackAnalytics("share", { difficulty });
+        DTGCore.trackAnalytics("share", "signals", { difficulty });
         if (window.flutter_inappwebview != null) {
             window.flutter_inappwebview.callHandler(
                 "requestShare",
