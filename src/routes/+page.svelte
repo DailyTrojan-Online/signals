@@ -5,6 +5,7 @@
     import Game from "$lib/components/Game.svelte";
     import { onMount } from "svelte";
     import { play } from "cuelume";
+    import { DTGameCore } from "$lib/dailytrojan-lib/gameCore";
     let gameStart = $state(false);
     let gameComponent: Game | null = $state(null);
     let complete = $state([false, false, false]);
@@ -13,7 +14,7 @@
         "medium",
         "hard",
     ];
-    let DTGCore: DTGameCore
+    let DTGCore: DTGameCore | null = $state(null);
     let allComplete = $derived(complete[0] && complete[1] && complete[2]);
     let splashReady = $state(false);
 
@@ -28,7 +29,6 @@
         gameStart = true;
         DTGCore.trackAnalytics("play", "signals", { difficulty });
         gameComponent.playGame();
-
     }
 
     function loadData(id: string) {
@@ -155,12 +155,14 @@
 </div>
 
 {#key difficulty}
-    <Game
-        {DTGCore}
-        {difficulty}
-        anotherDifficulty={playAnotherDifficulty}
-        bind:this={gameComponent}
-    ></Game>
+    {#if DTGCore}
+        <Game
+            {DTGCore}
+            {difficulty}
+            anotherDifficulty={playAnotherDifficulty}
+            bind:this={gameComponent}
+        ></Game>
+    {/if}
 {/key}
 
 <style>

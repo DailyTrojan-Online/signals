@@ -1435,7 +1435,7 @@
                             ? "0" + (timerValue % 60)
                             : timerValue % 60
                     }`,
-                    "https://dailytrojan-online.github.io/signals/",
+                    "",
                 ),
                 url: "https://dailytrojan-online.github.io/signals/",
             });
