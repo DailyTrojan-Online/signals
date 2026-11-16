@@ -3,3 +3,15 @@
   initial-value: 0deg; /* Sets the starting value */
   inherits: false; /* Determines if the variable is inherited by children */
 }
+.new-best {
+    background: #44a587;
+    font-weight: bold;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 2px;
+}
+.dark-mode .new-best {
+    background: #97e281;
+    color: black;
+}

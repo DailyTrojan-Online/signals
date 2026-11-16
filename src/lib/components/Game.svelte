@@ -860,10 +860,10 @@
             finishGame(true);
             return;
         }
-        let firstTime = localStorage.getItem("firstTimePlayed") == null;
+        let firstTime = localStorage.getItem("signals-ftue") == null;
         console.log(firstTime);
         if (firstTime) {
-            localStorage.setItem("firstTimePlayed", "true");
+            localStorage.setItem("signals-ftue", "true");
             showHowTo = true;
         }
         if (difficulty != "infinite") incrementTimer();
@@ -1952,7 +1952,7 @@
                         </h1>
                         <p>Best Time</p>
                         {#if calculateDifficultyStatHistory(difficulty).newBest}
-                            <p style="font-weight: bold;">NEW BEST!</p>
+                            <p class="new-best" style="font-weight: bold;">HIGH SCORE!</p>
                         {/if}
                     </div>
                     <div class="stat">
@@ -2621,4 +2621,5 @@
     .game-complete-block * {
         pointer-events: none !important;
     }
+
 </style>
