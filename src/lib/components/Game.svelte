@@ -7,13 +7,9 @@
     import { sineInOut } from "svelte/easing";
     import { play } from "cuelume";
     import { Poline, positionFunctions } from "poline";
-    import {
-      generateColorRamp,
-      colorUtils,
-    } from "rampensau";
+    import { generateColorRamp, colorUtils } from "rampensau";
 
     const { uniqueRandomHues } = colorUtils;
-
 
     let gameSplash: HTMLElement | null = null;
     let gameDate: HTMLElement | null = null;
@@ -34,7 +30,7 @@
     }: {
         difficulty: "easy" | "medium" | "hard" | "infinite";
         anotherDifficulty: () => void;
-        DTGCore: DTGameCore
+        DTGCore: DTGameCore;
     } = $props();
 
     let gridX = $state(6);
@@ -667,7 +663,7 @@
         selectedBlock = block;
         activelyDragging = true;
 
-        play("pulse", {volume: .4});
+        play("pulse", { volume: 0.4 });
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
         // Disable scrolling on the container during drag
@@ -855,16 +851,13 @@
     ) {
         block.cssPosition.set(pos).then(() => {
             block.isCurrentlyAnimating = false;
-
-            console.log("aaaasdfasdf");
         });
     }
     let showHowTo = $state(false);
     let gameOver = $state(false);
     export function playGame() {
-        console.log("asdfasdfasdfasdfasdfasdf");
         if (gameOver) {
-            finishGame();
+            finishGame(true);
             return;
         }
         let firstTime = localStorage.getItem("firstTimePlayed") == null;
@@ -904,8 +897,7 @@
         position: { x: number; y: number },
         instant = false,
     ) {
-      if(!instant)
-      play("toggle");
+        if (!instant) play("toggle");
         block.placed = true;
         block.position = { ...position };
         block.cssPosition.set(
@@ -957,20 +949,119 @@
         day: "2-digit",
     }).format(new Date());
 
+    function calculateDifficultyStatHistory(difficulty: string): {
+        bestStat: number;
+        streak: number;
+        total: number;
+        newBest: boolean;
+    } {
+        let history = loadData("signals-history");
+        let blankStats: { [index: string]: any } = {
+            bestStat: 0,
+            streak: 0,
+            total: 0,
+            newBest: false,
+        };
+        if (history == null || history.length < 1) return blankStats;
+        let today = new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        }).format(new Date());
+
+        blankStats.bestStat = difficulty == "infinite" ? 0 : Infinity;
+
+        let previousDate = new Date(history[0].date);
+
+        history.forEach(
+            (h: {
+                [index: string]: any;
+                date: string;
+                "stat-easy"?: number;
+                "stat-hard"?: number;
+                "stat-medium"?: number;
+                "stat-infinite"?: number;
+            }) => {
+                if (h["stat-" + difficulty] != null) {
+                    if (difficulty == "infinite") {
+                        if (h["stat-" + difficulty] > blankStats.bestStat) {
+                            blankStats.bestStat = h["stat-" + difficulty];
+                            if (h["date"] == today) {
+                                blankStats.newBest = true;
+                            }
+                        }
+                    } else {
+                        if (h["stat-" + difficulty] < blankStats.bestStat) {
+                            blankStats.bestStat = h["stat-" + difficulty];
+                            if (h["date"] == today) {
+                                blankStats.newBest = true;
+                            }
+                        }
+                    }
+                    let currentDate = new Date(h.date);
+                    if (areDatesConsecutive(currentDate, previousDate)) {
+                        blankStats.streak++;
+                    } else {
+                        blankStats.streak = 1;
+                    }
+                    blankStats.total++;
+                }
+                previousDate = new Date(h.date);
+            },
+        );
+        return blankStats;
+    }
+
+    function areDatesConsecutive(date1: Date, date2: Date) {
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        const utc1 = Date.UTC(
+            date1.getFullYear(),
+            date1.getMonth(),
+            date1.getDate(),
+        );
+        const utc2 = Date.UTC(
+            date2.getFullYear(),
+            date2.getMonth(),
+            date2.getDate(),
+        );
+
+        return Math.abs(utc2 - utc1) === MS_PER_DAY;
+    }
+
     function saveGameToHistory() {
         let history = loadData("signals-history") ?? [];
-        // //if there is history for today, update that history, otherwise add to the list
-        // let found = false;
-        // history.forEach((e: { date: any; wordsFound: any }) => {
-        //     if (e.date == gameSeed && !found) {
-        //         e.wordsFound = wordsFound;
-        //         found = true;
-        //         return;
-        //     }
-        // });
-        // if (!found) {
-        //     history.push({ date: gameSeed, wordsFound: wordsFound });
-        // }
+        //if there is history for today, update that history, otherwise add to the list
+        let found = false;
+        history.forEach(
+            (e: {
+                [index: string]: any;
+                date: any;
+                "stat-easy": number;
+                "stat-medium": number;
+                "stat-hard": number;
+                "stat-infinite": number;
+            }) => {
+                if (e.date == gameSeed && !found) {
+                    if (difficulty != "infinite") {
+                        e["stat-" + difficulty] = timerValue;
+                    } else {
+                        e["stat-" + difficulty] = infiniteGamesPlayed;
+                    }
+                    found = true;
+                    return;
+                }
+            },
+        );
+        if (!found) {
+            let newHistory: { [index: string]: any } = { date: gameSeed };
+            if (difficulty != "infinite") {
+                newHistory["stat-" + difficulty] = timerValue;
+            } else {
+                newHistory["stat-" + difficulty] = infiniteGamesPlayed;
+            }
+            history.push(newHistory);
+        }
         saveData("signals-history", history);
     }
 
@@ -1171,7 +1262,7 @@
         if (sortByLightness) {
             colors.sort((a, b) => a.luminance() - b.luminance());
         }
-        console.log(colors, count)
+        console.log(colors, count);
         return colors;
     }
 
@@ -1265,11 +1356,16 @@
     });
     let disableInput = $state(false);
 
-    function finishGame() {
+    function finishGame(completedAlready = false) {
         gameOver = true;
         gameCompleteEffect();
+        if (completedAlready) return;
         saveGameProgress();
-        DTGCore.trackAnalytics("win", "signals", { difficulty, time: timerValue });
+        saveGameToHistory();
+        DTGCore.trackAnalytics("win", "signals", {
+            difficulty,
+            time: timerValue,
+        });
     }
     function gameCompleteEffect() {
         disableInput = true;
@@ -1335,7 +1431,7 @@
             roundCountVisible = true;
             infiniteRoundCountScale.set(1);
             infiniteRoundCountRotation.set(0);
-            play("loading", {volume: .5})
+            play("loading", { volume: 0.5 });
             setTimeout(() => {
                 infiniteGamesPlayed += 1;
                 if ((infiniteGamesPlayed + 1) % 10 == 0) {
@@ -1343,7 +1439,7 @@
                 }
                 infiniteRoundCountScale.set(1.2);
                 infiniteRoundCountRotation.set(Math.random() * 10);
-                play("scan")
+                play("scan");
                 setTimeout(() => {
                     infiniteRoundCountScale.set(1);
                     infiniteRoundCountRotation.set(0);
@@ -1355,7 +1451,7 @@
                             Math.random() * 35 +
                                 (Math.random() > 0.5 ? -1 : 1) * 45,
                         );
-                        play("droplet", {volume: .25})
+                        play("droplet", { volume: 0.25 });
 
                         disableInput = false;
                         gameOver = false;
@@ -1455,6 +1551,12 @@
                 ),
             );
         }
+    }
+
+    function formattedTimeString(seconds: number): string {
+        return `${Math.floor(seconds / 60)}:${
+            seconds % 60 < 10 ? "0" + (seconds % 60) : seconds % 60
+        }`;
     }
 </script>
 
@@ -1861,13 +1963,37 @@
         <div class="modal-inner">
             <img width="80" src={SignalsLogo} alt="signals logo" />
             <h1 id="modal-title">Good job!</h1>
+            <div class="history-stats">
+                {#key showResultsModal}
+                    <div class="stat">
+                        <h1>
+                            {calculateDifficultyStatHistory(difficulty).total}
+                        </h1>
+                        <p>Puzzles</p>
+                    </div>
+                    <div class="stat stat-double">
+                        <h1>
+                            {formattedTimeString(
+                                calculateDifficultyStatHistory(difficulty)
+                                    .bestStat,
+                            )}
+                        </h1>
+                        <p>Best Time</p>
+                        {#if calculateDifficultyStatHistory(difficulty).newBest}
+                            <p style="font-weight: bold;">NEW BEST!</p>
+                        {/if}
+                    </div>
+                    <div class="stat">
+                        <h1>
+                            {calculateDifficultyStatHistory(difficulty).streak}
+                        </h1>
+                        <p>Streak</p>
+                    </div>
+                {/key}
+            </div>
             <h2 style:font-weight="normal">
                 You finished the <strong>{difficulty}</strong> puzzle in
-                <strong
-                    >{Math.floor(timerValue / 60)}:{timerValue % 60 < 10
-                        ? "0" + (timerValue % 60)
-                        : timerValue % 60}.</strong
-                >
+                <strong>{formattedTimeString(timerValue)}.</strong>
             </h2>
             <button
                 class="close-button"
@@ -1882,8 +2008,8 @@
                 >
             </div>
             <div class="flex-hor">
-                <a class="button"
-                    href="https://dailytrojan.com/games/"><i class="ti ti-device-gamepad"></i>All Games</a
+                <a class="button" href="https://dailytrojan.com/games/"
+                    ><i class="ti ti-device-gamepad"></i>All Games</a
                 >
                 <button class="button-share" onclick={copyResultsString}
                     ><i class="ti ti-share"></i> Share Results</button

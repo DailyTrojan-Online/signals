@@ -3,3 +3,11 @@
   initial-value: 0deg; /* Sets the starting value */
   inherits: false; /* Determines if the variable is inherited by children */
 }
+
+.stat-double {
+    width: 120px !important;
+}
+.stat * {
+    text-transform: capitalize;
+    text-align: center;
+}
