@@ -1520,7 +1520,7 @@
         } else if (mobileCheck()) {
             navigator.share({ text: shareText });
         } else {
-            DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
+            DTGCore.showToast("Results copied!", "ti-clipboard");
             DTGCore.copyToClipboard(shareText);
         }
     }
