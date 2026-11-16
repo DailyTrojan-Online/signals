@@ -1505,51 +1505,23 @@
             year: "numeric",
         }).format(new Date());
         DTGCore.trackAnalytics("share", "signals", { difficulty });
+        const shareUrl = "https://dailytrojan-online.github.io/signals/";
+        const shareText = DTGCore.formatString(
+            completeCopyFormat,
+            date,
+            difficulty,
+            `${Math.floor(timerValue / 60)}:${
+                timerValue % 60 < 10 ? "0" + (timerValue % 60) : timerValue % 60
+            }`,
+            shareUrl,
+        );
         if (window.flutter_inappwebview != null) {
-            window.flutter_inappwebview.callHandler(
-                "requestShare",
-                DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    difficulty,
-                    `${Math.floor(timerValue / 60)}:${
-                        timerValue % 60 < 10
-                            ? "0" + (timerValue % 60)
-                            : timerValue % 60
-                    }`,
-                    "https://dailytrojan-online.github.io/signals/",
-                ),
-            );
+            window.flutter_inappwebview.callHandler("requestShare", shareText);
         } else if (mobileCheck()) {
-            navigator.share({
-                text: DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    difficulty,
-                    `${Math.floor(timerValue / 60)}:${
-                        timerValue % 60 < 10
-                            ? "0" + (timerValue % 60)
-                            : timerValue % 60
-                    }`,
-                    "",
-                ),
-                url: "https://dailytrojan-online.github.io/signals/",
-            });
+            navigator.share({ text: shareText });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
-            DTGCore.copyToClipboard(
-                DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    difficulty,
-                    `${Math.floor(timerValue / 60)}:${
-                        timerValue % 60 < 10
-                            ? "0" + (timerValue % 60)
-                            : timerValue % 60
-                    }`,
-                    "https://dailytrojan-online.github.io/signals/",
-                ),
-            );
+            DTGCore.copyToClipboard(shareText);
         }
     }
 
